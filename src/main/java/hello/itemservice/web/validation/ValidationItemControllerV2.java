@@ -3,9 +3,13 @@ package hello.itemservice.web.validation;
 import hello.itemservice.domain.item.Item;
 import hello.itemservice.domain.item.ItemRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -16,6 +20,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/validation/v2/items")
 @RequiredArgsConstructor
+@Slf4j
 public class ValidationItemControllerV2 {
 
     private final ItemRepository itemRepository;
@@ -41,37 +46,38 @@ public class ValidationItemControllerV2 {
     }
 
     @PostMapping("/add")
-    public String addItem(@ModelAttribute Item item, RedirectAttributes redirectAttributes, Model model) {
-        //검증 오류 결과를 보관
-        Map<String, String> errors = new HashMap<>();
+    public String addItemV1(@ModelAttribute Item item, BindingResult bindingResult,
+                          RedirectAttributes redirectAttributes, Model model) {
 
         //검증 로직
         if(!StringUtils.hasText(item.getItemName())){
-            errors.put("itemName","상품 이름은 필수 잆니다.");
+            //FieldError <- 필드 단위의 에러들을 저장하는 스프링 제공 객체
+            bindingResult.addError(new FieldError("item","itemName","상품 이름은 필수 잆니다."));
         }
 
         if(item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000){
-            errors.put("price","가격은 1,000~1,000,000 까지 허용합니다.");
+            bindingResult.addError(new FieldError("item","price","가격은 1,000~1,000,000 까지 허용합니다."));
         }
         if(item.getQuantity() == null || item.getQuantity() >= 9999){
-            errors.put("quantity","수량은 최대 9,999까지 허용합니다.");
+            bindingResult.addError(new FieldError("item","quantity","수량은 최대 9,999까지 허용합니다."));
         }
 
         //특정 필드가 아닌 복합 룰 검증
         if (item.getPrice() != null && item.getQuantity() != null){
             int resultPrice = item.getPrice()*item.getQuantity();
             if(resultPrice < 10000){
-                errors.put("globalError","가격 * 수량은 10,000원 이상이어야 합니다. " +
-                        "현재 값 = " + resultPrice);
+                //필드 에러가 아닌 글로벌에러 -> ObjectError,
+                //objectName은 모델에트리뷰트 파라미터 변수를 담음
+                bindingResult.addError(new ObjectError("item","가격 * 수량은 10,000원 이상이어야 합니다. " +
+                        "현재 값 = " + resultPrice));
             }
         }
 
         //검증에 실패하면 다시 입력 폼으로
-        if(!errors.isEmpty()){
-            model.addAttribute("errors",errors);
-            //@ModelAttribute는 자동으로 Model에
-            //@ModelAttribute로 지정한 값을 넣음 (잊지 말좌!!!!!)
-            //따라서 모델에 따로 사용자 입력값을 저장해줄 필요 없음음
+        if(bindingResult.hasErrors()){
+            log.info("errors={}",bindingResult);
+            //모델에 담지 않아도 됨
+            //BindingResult는 자동으로 뷰에 같이 넘어감
             return "validation/v2/addForm";
         }
 
