@@ -45,6 +45,8 @@ public class ValidationItemControllerV2 {
         return "validation/v2/addForm";
     }
 
+    //BindingResult2 강의 <- BindingResult에 대한 상세 설명
+    //https://round-backbone-23e.notion.site/BindingResult2-46ff1f43ccf1421ba30a0e5a0f1e01f7
     @PostMapping("/add")
     public String addItemV1(@ModelAttribute Item item, BindingResult bindingResult,
                           RedirectAttributes redirectAttributes, Model model) {
