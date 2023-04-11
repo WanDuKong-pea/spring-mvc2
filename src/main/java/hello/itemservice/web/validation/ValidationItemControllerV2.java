@@ -13,9 +13,8 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
 
 @Controller
 @RequestMapping("/validation/v2/items")
@@ -45,6 +44,7 @@ public class ValidationItemControllerV2 {
         return "validation/v2/addForm";
     }
 
+    /*
     //BindingResult2 강의 <- BindingResult에 대한 상세 설명
     //https://round-backbone-23e.notion.site/BindingResult2-46ff1f43ccf1421ba30a0e5a0f1e01f7
     @PostMapping("/add")
@@ -84,6 +84,48 @@ public class ValidationItemControllerV2 {
         }
 
         //성공 로직
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+    */
+
+    @PostMapping("/add")
+    public String addItemV2(@ModelAttribute Item item, BindingResult bindingResult,
+                            RedirectAttributes redirectAttributes){
+        if(!StringUtils.hasText(item.getItemName())){
+            bindingResult.addError(
+                    new FieldError("item", "itemName", item.getItemName(),
+                    false, null, null,"상품 이름은 필수 입니다."));
+        }
+
+        if(item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000){
+            bindingResult.addError(
+                    new FieldError("item","price", item.getPrice(), false,
+                    null, null, "가격은 1,000 ~ 1,000,000까지 허용합니다"));
+        }
+
+        if(item.getQuantity() == null || item.getQuantity() > 10000){
+            bindingResult.addError(
+                    new FieldError("item","quantity",item.getQuantity(), false,
+                    null, null, "수량은 최대 9,999까지 허용합니다."));
+        }
+
+        if(item.getPrice() != null && item.getQuantity() != null){
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if(resultPrice < 10000){
+                bindingResult.addError(new ObjectError("item",null,null,
+                        "가격*수량의 합은 10,000원 이상이어야 합니다. 현재 값 " + resultPrice));
+            }
+        }
+
+        if(bindingResult.hasErrors()){
+            log.info("errors={}",bindingResult);
+            return "validation/v2/addForm";
+        }
+
+        //성공로직
         Item savedItem = itemRepository.save(item);
         redirectAttributes.addAttribute("itemId", savedItem.getId());
         redirectAttributes.addAttribute("status", true);
