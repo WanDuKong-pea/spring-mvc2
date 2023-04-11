@@ -69,7 +69,9 @@ public class ValidationItemControllerV1 {
         //검증에 실패하면 다시 입력 폼으로
         if(!errors.isEmpty()){
             model.addAttribute("errors",errors);
-            return "validation/v1/addForm";
+            //@ModelAttribute는 자동으로 Model에
+            //@ModelAttribute로 지정한 값을 넣음 (잊지 말좌!!!!!)
+            //따라서 모델에 따로 사용자 입력값을 저장해줄 필요 없음음            return "validation/v1/addForm";
         }
 
         //성공 로직
