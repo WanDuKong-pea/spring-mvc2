@@ -180,8 +180,13 @@ public class ValidationItemControllerV2 {
     @PostMapping("/add")
     public String addItemV4(@ModelAttribute Item item, BindingResult bindingResult,
                             RedirectAttributes redirectAttributes){
-        log.info("objectName={}",bindingResult.getObjectName());
-        log.info("target={}",bindingResult.getTarget());
+
+        //스프링이 자동으로 만든 오류 코드(ex_타입오류)가 있다면
+        //바로 반환하는 방법도 있음
+        if(bindingResult.hasErrors()){
+            log.info("errors={}",bindingResult);
+            return "validation/v2/addForm";
+        }
 
         //바로 아래 if문 대체 가능
         //스프링을 사용할때 검증에서 간혹 쓰게됨
