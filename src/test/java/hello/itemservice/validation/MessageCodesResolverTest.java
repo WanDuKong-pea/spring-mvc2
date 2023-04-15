@@ -26,6 +26,8 @@ public class MessageCodesResolverTest {
                 "required.java.lang.String",
                 "required"
         );
+        // 이후 new FieldError("item","itemName",item.getItemName(),false,messageCodes,null, null);
+        // 와 같이 FieldError 를 생성해서 반환하는 것
     }
 
     //오류 메시지 출력
