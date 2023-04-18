@@ -82,11 +82,27 @@ public class ValidationItemControllerV3 {
     public String editForm(@PathVariable Long itemId, Model model) {
         Item item = itemRepository.findById(itemId);
         model.addAttribute("item", item);
-        return "validation/v1/editForm";
+        return "validation/v3/editForm";
     }
 
     @PostMapping("/{itemId}/edit")
-    public String edit(@PathVariable Long itemId, @ModelAttribute Item item) {
+    public String edit(@PathVariable Long itemId, @Validated @ModelAttribute Item item,
+                       BindingResult bindingResult) {
+        //글로벌 에러
+        if(item.getPrice()!= null && item.getQuantity() != null){
+            int resultPrice = item.getPrice()*item.getQuantity();
+            if(resultPrice < 10000){
+                bindingResult.reject("totalPriceMin", new Object[]{10000,
+                        resultPrice}, null);
+            }
+        }
+
+        if(bindingResult.hasErrors()){
+            log.info("errors={}",bindingResult);
+            return "validation/v3/editForm";
+        }
+
+        //검증 성공 로직
         itemRepository.update(itemId, item);
         return "redirect:/validation/v3/items/{itemId}";
     }
