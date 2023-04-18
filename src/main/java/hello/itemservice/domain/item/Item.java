@@ -13,6 +13,12 @@ import javax.validation.constraints.NotNull;
 //@ScriptAssert는 제약이 많고 복잡, 해당 객체의 범위를 넘어서는 검증 또한 불가.
 public class Item {
 
+    //Bean Validation 한계
+    //수정 추가 요구사항 -> id값이 필수, quantity에 최댓값 제약 없음
+    //수정은 잘 동작하지만 등록에서 문제가 발생
+    //등록과 수정은 같은 Bean Validation을 적용할 수 없음
+
+    @NotNull
     private Long id;
 
     @NotBlank(message="상품 이름은 필수입니다.")
@@ -26,8 +32,8 @@ public class Item {
     //@NotNull : null을 허용하지 않음
     //@Range(min = 값, max = 값): 범위 안의 값이어야 함
 
+    //@Max(9999)
     @NotNull
-    @Max(9999)
     private Integer quantity;
     //@Max(값): 최대치를 넘기는 값 허용하지 않음
 
@@ -39,4 +45,6 @@ public class Item {
         this.price = price;
         this.quantity = quantity;
     }
+
+
 }
