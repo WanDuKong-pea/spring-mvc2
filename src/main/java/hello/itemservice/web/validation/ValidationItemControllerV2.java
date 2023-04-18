@@ -305,7 +305,14 @@ public class ValidationItemControllerV2 {
         Item savedItem = itemRepository.save(item);
         redirectAttributes.addAttribute("itemId",savedItem.getId());
         redirectAttributes.addAttribute("status",true);
-        return "redirect:/validation/v2/{itemId}";
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+
+    @GetMapping("/{itemId}/edit")
+    public String editForm(@PathVariable Long itemId, Model model) {
+        Item item = itemRepository.findById(itemId);
+        model.addAttribute("item", item);
+        return "validation/v1/editForm";
     }
 
     @PostMapping("/{itemId}/edit")
