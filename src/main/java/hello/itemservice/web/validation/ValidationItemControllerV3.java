@@ -46,18 +46,6 @@ public class ValidationItemControllerV3 {
         return "validation/v3/addForm";
     }
 
-    /* 아래 코드 생략_Bean Validation 적용을 위함(검증기 중복)
-    @InitBinder
-    public void init(WebDataBinder dataBinder){
-        log.info("init binder {}", dataBinder);
-        dataBinder.addValidators(itemValidator);
-        //아래와 같이 여러개 validator를 등록 가능
-        //validator의 support()메서드로 검증 대상을 구분함
-        //dataBinder.addValidators(userValidator);
-        //dataBinder.addValidators(xxxValidator);
-    }
-     */
-
     @PostMapping("/add")
     public String addItem(@Validated @ModelAttribute Item item, BindingResult bindingResult,
                           RedirectAttributes redirectAttributes) {
@@ -69,7 +57,15 @@ public class ValidationItemControllerV3 {
                 //(@Valid, @Validated만 적용하면 됨)
         //@ModelAttribute는 각각의 필드 타입 변환시도 변환에 성공한 필드만 BeanValidation 적용
             //타입 변환에 실패한 필드는 typeMisMatch로 FieldError 추가됨.
-        //global error는 이후 강의에서 설명
+
+        //글로벌 에러
+        if(item.getPrice()!= null && item.getQuantity() != null){
+            int resultPrice = item.getPrice()*item.getQuantity();
+            if(resultPrice < 10000){
+                bindingResult.reject("totalPriceMin", new Object[]{10000,
+                resultPrice}, null);
+            }
+        }
 
         if (bindingResult.hasErrors()) {
             log.info("errors={}", bindingResult);

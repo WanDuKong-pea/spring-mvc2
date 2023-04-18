@@ -2,13 +2,15 @@ package hello.itemservice.domain.item;
 
 import lombok.Data;
 import org.hibernate.validator.constraints.Range;
-import org.springframework.web.bind.annotation.ModelAttribute;
+import org.hibernate.validator.constraints.ScriptAssert;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
+//@ScriptAssert(lang = "javascript", script = "_this.price * _this.quantity >= 10000")
+//@ScriptAssert는 제약이 많고 복잡, 해당 객체의 범위를 넘어서는 검증 또한 불가.
 public class Item {
 
     private Long id;
