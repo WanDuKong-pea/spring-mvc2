@@ -4,16 +4,10 @@ import hello.itemservice.domain.item.Item;
 import hello.itemservice.domain.item.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
-import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -27,17 +21,9 @@ public class ValidationItemControllerV3 {
 
     //@RequiredArgsConstructor + 생성자 하나 = 자동 생성자 주입
     //@AutoWired 사용 안해도 됨
-    private final ItemValidator itemValidator;
     private final ItemRepository itemRepository;
-
-    /*
-    //위의 코드로 대체 됨.
-    @Autowired
-    public ValidationItemControllerV3(ItemValidator itemValidator, ItemRepository itemRepository) {
-        this.itemValidator = itemValidator;
-        this.itemRepository = itemRepository;
-    }
-    */
+    //아래 코드 생략_Bean Validation 적용을 위함(검증기 중복)
+    //private final ItemValidator itemValidator;
 
 
     @GetMapping
@@ -60,13 +46,7 @@ public class ValidationItemControllerV3 {
         return "validation/v3/addForm";
     }
 
-    /**
-     * WebDataBinder에 검증기를 추가하면 해당 컨트롤러에서는
-     * 검증기를 자동으로 적용할 수 있음
-     * @initBinder: 해당 컨트롤러에만 영향
-     * 글로벌은 별도 설정 필요
-     * @param dataBinder
-     */
+    /* 아래 코드 생략_Bean Validation 적용을 위함(검증기 중복)
     @InitBinder
     public void init(WebDataBinder dataBinder){
         log.info("init binder {}", dataBinder);
@@ -76,26 +56,29 @@ public class ValidationItemControllerV3 {
         //dataBinder.addValidators(userValidator);
         //dataBinder.addValidators(xxxValidator);
     }
+     */
 
     @PostMapping("/add")
-    public String addItemV6(@Validated @ModelAttribute Item item, BindingResult bindingResult,
-                            RedirectAttributes redirectAttributes){
-        //파라미터에 @Validated 추가됨 <- 검증기를 실행하라는 애노테이션
-        //겁증 대상(item) 앞에 붙임
-        //@Validated 애노테이션이 붙으면
-        //앞서 WebDataBinder에 등록한 검증기를 찾아 실행후 BindingResult 에 검증 결과를 담음
+    public String addItem(@Validated @ModelAttribute Item item, BindingResult bindingResult,
+                          RedirectAttributes redirectAttributes) {
+        //@Validated: 검증기를 실행하라는 애노테이션, 겁증 대상(item) 앞에 붙임.
+        //@Validated 애노테이션이 붙으면 자동으로 Bean Validator를 인지하고 스프링에 통합함
+            //<- spring-boot-starter-validation 라이브러리가 추가되어 있어야 함
+            //스프링 부트는 자동으로 LocalValidatorFactroyBean을 글로벌 Validator로 등록
+            //이 Validator는 @NotNull 같은 애노테이션을 보고 검증을 수행
+                //(@Valid, @Validated만 적용하면 됨)
+        //@ModelAttribute는 각각의 필드 타입 변환시도 변환에 성공한 필드만 BeanValidation 적용
+            //타입 변환에 실패한 필드는 typeMisMatch로 FieldError 추가됨.
+        //global error는 이후 강의에서 설명
 
-        //이전 버전 코드 생략 됨.
-        //itemValidator.validate(item,bindingResult);
-
-        if(bindingResult.hasErrors()){
-            log.info("errors={}",bindingResult);
+        if (bindingResult.hasErrors()) {
+            log.info("errors={}", bindingResult);
             return "validation/v3/addForm";
         }
         //성공로직
         Item savedItem = itemRepository.save(item);
-        redirectAttributes.addAttribute("itemId",savedItem.getId());
-        redirectAttributes.addAttribute("status",true);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
         return "redirect:/validation/v3/items/{itemId}";
     }
 

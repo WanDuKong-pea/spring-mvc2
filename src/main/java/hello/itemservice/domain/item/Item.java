@@ -2,6 +2,7 @@ package hello.itemservice.domain.item;
 
 import lombok.Data;
 import org.hibernate.validator.constraints.Range;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotBlank;
@@ -12,7 +13,7 @@ public class Item {
 
     private Long id;
 
-    @NotBlank
+    @NotBlank(message="상품 이름은 필수입니다.")
     private String itemName;
     //@NotBlank : 빈값 + 공백만 있는 경우를 허용하지 않음
     //@NotBlank(message="공백X")와 같이 기본 메시지를 지정해둘 수 있음
